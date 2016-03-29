@@ -8,6 +8,7 @@ import xmltree,
        fp.map,
        strtabs,
        sequtils,
+       re,
        future
 
 type
@@ -47,16 +48,40 @@ proc fromStringE*(n = Node, s: string): Node =
 proc fromString*(n = Node, s: string): EitherS[Node] =
   tryS(() => Node.fromStringE(s))
 
-proc `/`*(n: Node, qname: QName): NodeList =
+proc `/`*(n: Node, regex: Regex): NodeList =
   result = Nil[Node]()
-  let name = $qname
-  for ch in n.XmlNode:
-    if ch.tag == name:
-      result = Cons(ch.Node, result)
-  result = result.reverse
+  if n.XmlNode.kind == xnElement:
+    for ch in n.XmlNode:
+      if ch.kind == xnElement and ch.tag.match(regex):
+        result = Cons(ch.Node, result)
+    result = result.reverse
+
+proc `/`*(n: Node, qname: QName): NodeList =
+  if n.XmlNode.kind != xnElement:
+    result = Nil[Node]()
+  elif qname.ns == "*":
+    result = n / re("^(.+:)?" & qname.name & "$")
+  else:
+    result = Nil[Node]()
+    let name = $qname
+    for ch in n.XmlNode:
+      if ch.kind == xnElement and ch.tag == name:
+        result = Cons(ch.Node, result)
+    result = result.reverse
+
+proc `//`*(n: Node, regex: Regex): NodeList =
+  if n.XmlNode.kind != xnElement:
+    result = Nil[Node]()
+  else:
+    result = n / regex
+    for ch in n.XmlNode:
+      result = result ++ ch.Node // regex
 
 proc `//`*(n: Node, qname: QName): NodeList =
-  n.XmlNode.findAll($qname).asList.map((v: XmlNode) => v.Node)
+  if qname.ns == "*":
+    result = n // re("^(.+:)?" & qname.name & "$")
+  else:
+    result = n.XmlNode.findAll($qname).asList.map((v: XmlNode) => v.Node)
 
 proc name*(n: Node): QName =
   QName.fromString(n.XmlNode.tag)

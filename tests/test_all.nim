@@ -2,7 +2,9 @@ import unittest,
        fp.either,
        fp.option,
        fp.map,
+       fp.list,
        xmltools,
+       re,
        future
 
 suite "xmltools":
@@ -62,3 +64,23 @@ suite "xmltools":
     let apiNs = nss.get("http://acme.com/api/v2").get
     check: (xml // apiNs $: "session_id").text == "1"
     check: (xml // apiNs $: "issuer_id").text == "2"
+
+  test "Advanced searches":
+    let xml = Node.fromStringE """
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <SOAP-ENV:Fault>
+            <faultcode>SOAP-ENV:Client</faultcode>
+            <faultstring xml:lang="en">Validation error</faultstring>
+            <detail>
+                <spring-ws:ValidationError xmlns:spring-ws="http://springframework.org/spring-ws">cvc-datatype-valid.1.2.1: 'ISSUER_ID_T' is not a valid value for 'integer'.</spring-ws:ValidationError>
+                <spring-ws:ValidationError xmlns:spring-ws="http://springframework.org/spring-ws">cvc-type.3.1.3: The value 'ISSUER_ID_T' of element 'v2:issuer_id' is not valid.</spring-ws:ValidationError>
+            </detail>
+        </SOAP-ENV:Fault>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+"""
+    check: (xml // "*" $: "Fault").length == 1
+    check: (xml // "*" $: "ValidationError").length == 2
+    check: (xml // "*" $: "ValidationError").text == (xml // "*" $: "Fault" // "*" $: "ValidationError").text
