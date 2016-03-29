@@ -5,13 +5,16 @@ import xmltree,
        fp.either,
        fp.list,
        fp.option,
+       fp.map,
        strtabs,
+       sequtils,
        future
 
 type
   Node* = distinct XmlNode
   NodeList* = List[Node]
   QName* = tuple[ns: string, name: string]
+  Namespaces* = Map[string, string]
 
 #################################################################################################### 
 # Qualified name
@@ -53,18 +56,28 @@ proc `/`*(n: Node, qname: QName): NodeList =
   result = result.reverse
 
 proc `//`*(n: Node, qname: QName): NodeList =
-  n.XmlNode.findAll($qname).asList.map(v => v.Node)
+  n.XmlNode.findAll($qname).asList.map((v: XmlNode) => v.Node)
 
 proc name*(n: Node): QName =
   QName.fromString(n.XmlNode.tag)
 
 proc text*(n: Node): string = n.XmlNode.innerText
 
-proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map(v => v.Node)
+proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map((v: XmlNode) => v.Node)
 
 proc attr*(n: Node, qname: QName): Option[string] =
   let name = $qname
   if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some else: string.none
+
+proc toMap(s: StringTableRef): Map[string,string] =
+  result = asMap[string,string]()
+  for k,v in s:
+    result = result + (k,v)
+
+proc namespaces*(n:Node): Namespaces =
+  let p = n.XmlNode.attrs.toMap
+  p.filter((i: (string, string)) => QName.fromString(i.key).ns == "xmlns")
+  .map((i: (string, string)) => (i.value, QName.fromString(i.key).name))
 
 ####################################################################################################
 # NodeList

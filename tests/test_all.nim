@@ -1,7 +1,8 @@
-import xmltools,
-       unittest,
+import unittest,
        fp.either,
        fp.option,
+       fp.map,
+       xmltools,
        future
 
 suite "xmltools":
@@ -42,3 +43,22 @@ suite "xmltools":
     check: xml.name == "a"
     check: (xml // "b").text == "123"
     check: xml.child("b").flatMap((v: Node) => v.attr("id")).getOrElse("") == "100"
+
+  test "Namespaces":
+    let xml = Node.fromStringE """
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:v2="http://acme.com/api/v2">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <v2:GetAccountListRequest>
+            <v2:session_id>1</v2:session_id>
+            <v2:issuer_id>2</v2:issuer_id>
+        </v2:GetAccountListRequest>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+"""
+    let nss = xml.namespaces
+    require: nss.get("http://acme.com/api/v2").isDefined
+    let apiNs = nss.get("http://acme.com/api/v2").get
+    check: (xml // apiNs $: "session_id").text == "1"
+    check: (xml // apiNs $: "issuer_id").text == "2"
