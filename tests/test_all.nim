@@ -74,6 +74,7 @@ suite "xmltools":
             <faultcode>SOAP-ENV:Client</faultcode>
             <faultstring xml:lang="en">Validation error</faultstring>
             <detail>
+                <description>Lily was here!</description>
                 <spring-ws:ValidationError xmlns:spring-ws="http://springframework.org/spring-ws">cvc-datatype-valid.1.2.1: 'ISSUER_ID_T' is not a valid value for 'integer'.</spring-ws:ValidationError>
                 <spring-ws:ValidationError xmlns:spring-ws="http://springframework.org/spring-ws">cvc-type.3.1.3: The value 'ISSUER_ID_T' of element 'v2:issuer_id' is not valid.</spring-ws:ValidationError>
             </detail>
