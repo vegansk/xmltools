@@ -14,15 +14,27 @@ import xmltree,
 type
   Node* = distinct XmlNode
   NodeList* = List[Node]
-  QName* = tuple[ns: string, name: string]
+  QNameImpl = tuple[ns: string, name: string]
+  QName* = distinct QNameImpl
   Namespaces* = Map[string, string]
 
 #################################################################################################### 
 # Qualified name
 
-proc `$:`*(ns: string, name: string): QName = (ns: ns, name: name)
+proc `$:`*(ns: string, name: string): QName = (ns: ns, name: name).QName
 
-converter toQName*(name: string): QName = "" $: name
+converter toQName*(name: string): QName =
+  let s = name.split(":")
+  if s.len == 1:
+    "" $: name
+  else:
+    s[0] $: s[1]
+
+
+proc ns*(q: QName): string = q.QNameImpl.ns
+proc name*(q: QName): string = q.QNameImpl.name
+
+proc `==`*(q1, q2: QName): bool {.borrow.}
 
 proc `$`*(qname: QName): string =
   if qname.ns == "":
@@ -47,6 +59,17 @@ proc fromStringE*(n = Node, s: string): Node =
 
 proc fromString*(n = Node, s: string): EitherS[Node] =
   tryS(() => Node.fromStringE(s))
+
+proc text*(n: Node): string = n.XmlNode.innerText
+
+proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map((v: XmlNode) => v.Node)
+
+proc attr*(n: Node, qname: QName): Option[string] =
+  if n.XmlNode.kind == xnElement and n.XmlNode.attrsLen > 0:
+    let name = $qname
+    if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some else: string.none
+  else:
+    string.none
 
 proc `/`*(n: Node, regex: Regex): NodeList =
   result = Nil[Node]()
@@ -83,16 +106,54 @@ proc `//`*(n: Node, qname: QName): NodeList =
   else:
     result = n.XmlNode.findAll($qname).asList.map((v: XmlNode) => v.Node)
 
+proc findAttrName(n: Node, regex: Regex): Option[QName] =
+  if n.XmlNode.kind == xnElement and n.XmlNode.attrsLen > 0:
+    for k in n.XmlNode.attrs.keys:
+      if k.match(regex):
+        return QName.fromString(k).some
+  QName.none
+
+proc `/@`*(n: Node, regex: Regex): NodeList =
+  result = Nil[Node]()
+  if n.XmlNode.kind == xnElement:
+    for ch in n.XmlNode:
+      if ch.Node.findAttrName(regex).isDefined:
+        result = Cons(ch.Node, result)
+    result = result.reverse
+
+proc `/@`*(n: Node, name: QName): NodeList =
+  result = Nil[Node]()
+  if n.XmlNode.kind != xnElement:
+    return
+  elif name.ns == "*":
+    result = n /@ re("^(.+:)?" & name.name & "$")
+  else:
+    for ch in n.XmlNode:
+      if ch.Node.attr(name).isDefined:
+        result = Cons(ch.Node, result)
+    result = result.reverse
+
+proc `//@`*(n: Node, regex: Regex): NodeList =
+  if n.XmlNode.kind != xnElement:
+    result = Nil[Node]()
+  else:
+    result = n /@ regex
+    for ch in n.XmlNode:
+      result = result ++ ch.Node //@ regex
+
+proc `//@`*(n: Node, name: QName): NodeList =
+  result = Nil[Node]()
+  if n.XmlNode.kind != xnElement:
+    return
+  elif name.ns == "*":
+    result = n //@ re("^(.+:)?" & name.name & "$")
+  else:
+    result = n /@ name
+    for ch in n.XmlNode:
+      result = result ++ ch.Node //@ name
+
 proc name*(n: Node): QName =
   QName.fromString(n.XmlNode.tag)
-
-proc text*(n: Node): string = n.XmlNode.innerText
-
-proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map((v: XmlNode) => v.Node)
-
-proc attr*(n: Node, qname: QName): Option[string] =
-  let name = $qname
-  if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some else: string.none
 
 proc toMap(s: StringTableRef): Map[string,string] =
   result = asMap[string,string]()

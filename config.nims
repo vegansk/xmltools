@@ -7,7 +7,7 @@ srcdir        = "src"
 
 requires "nim >= 0.13.1", "nimfp >= 0.0.4"
 
-proc buildBase(debug = true, bin: string, src: string) =
+proc buildBase(debug: bool, bin: string, src: string) =
   switch("out", (thisDir() & "/" & bin).toExe)
   --nimcache: build
   if not debug:

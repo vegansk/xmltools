@@ -84,3 +84,14 @@ suite "xmltools":
     check: (xml // "*" $: "Fault").length == 1
     check: (xml // "*" $: "ValidationError").length == 2
     check: (xml // "*" $: "ValidationError").text == (xml // "*" $: "Fault" // "*" $: "ValidationError").text
+    check: (xml /@ "xmlns" $: "spring-ws").length == 0
+    check: (xml //@ "xmlns" $: "spring-ws").length == 2
+    check: (xml /@ "*" $: "spring-ws").length == 0
+    check: (xml //@ "*" $: "spring-ws").length == 2
+    check: (xml /@ "xmlns:spring-ws").length == 0
+    check: (xml //@ "xmlns:spring-ws").length == 2
+
+    echo: (xml // "*:Fault")
+    .flatMap((e: Node) => e // "*:description" ++ e // "*:ValidationError")
+    .map((n: Node) => n.text)
+    .foldLeft("", (s, v: string) => s & (if s == "": "" else: "\L") & v)
