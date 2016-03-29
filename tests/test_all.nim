@@ -1,6 +1,8 @@
 import xmltools,
        unittest,
-       fp.either
+       fp.either,
+       fp.option,
+       future
 
 suite "xmltools":
   test "Conversion":
@@ -36,6 +38,7 @@ suite "xmltools":
     check: $(xmlTree // ns $: "c") == "<c>1</c><c>2</c><c>3</c>"
 
   test "Accessors":
-    let xml = Node.fromStringE """<a><b>1</b><c>1</c><b>2</b><c>2</c><b>3</b><c>3</c></a>"""
+    let xml = Node.fromStringE """<a><b id="100">1</b><c>1</c><b>2</b><c>2</c><b>3</b><c>3</c></a>"""
     check: xml.name == "a"
     check: (xml // "b").text == "123"
+    check: xml.child("b").flatMap((v: Node) => v.attr("id")).getOrElse("") == "100"

@@ -4,6 +4,8 @@ import xmltree,
        strutils,
        fp.either,
        fp.list,
+       fp.option,
+       strtabs,
        future
 
 type
@@ -57,6 +59,12 @@ proc name*(n: Node): QName =
   QName.fromString(n.XmlNode.tag)
 
 proc text*(n: Node): string = n.XmlNode.innerText
+
+proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map(v => v.Node)
+
+proc attr*(n: Node, qname: QName): Option[string] =
+  let name = $qname
+  if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some else: string.none
 
 ####################################################################################################
 # NodeList
