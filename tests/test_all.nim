@@ -97,10 +97,26 @@ suite "xmltools":
     .map((n: Node) => n.text)
     .foldLeft("", (s, v: string) => s & (if s == "": "" else: "\L") & v)
 
+  test "Strong searches and data getters":
+    let xml = Node.fromStringE """
+<a>
+  <b><v>test</v></b>
+  <c><v>100500</v></c>
+</a>
+"""
+    expect(NodeNotFoundError): discard xml /! "test"
+    expect(NodeNotFoundError): discard xml //! "test"
+    check: (xml /! r"b" /! "v").asStrO == "test".some
+    check: (xml //! "v").asStrO == "test".some # Only first v is used
+    check: (xml //! "v").asStr == "test" # Only first v is used
+    expect(ValueError): discard (xml //! "v").asInt # Only first v is used
+    check: (xml // "c" /! "v").asIntO == 100500.some
+    check: (xml // "c" /! "v").asInt == 100500
+
   test "XML builder":
     check: $(el"test".run) == "<test />"
     check: $(el("ns" $: "test").run) == "<ns:test />"
-    let xml = el("test", el("a", el("ns" $: "child")) ^^ el("b") ^^ el("c") ^^ endn())
+    let xml = el("test", asList(el("a", el("ns" $: "child")), el("b"), el("c")))
     echo xml()
     let xmla = el("test", ("a", "b"), el("a"))
     echo xmla()
