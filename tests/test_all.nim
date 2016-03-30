@@ -104,3 +104,5 @@ suite "xmltools":
     echo xml()
     let xmla = el("test", ("a", "b"), el("a"))
     echo xmla()
+
+    check: $(el("test", textEl("data")).run) == "<test>data</test>"

@@ -36,6 +36,9 @@ converter toQName*(name: string): QName =
 proc ns*(q: QName): string = q.QNameImpl.ns
 proc name*(q: QName): string = q.QNameImpl.name
 
+proc nsDecl*(ns, url: string): Attr =
+  ("xmlns" & (if ns == "": "" else: ":" & ns), url)
+
 proc `==`*(q1, q2: QName): bool {.borrow.}
 
 proc `$`*(qname: QName): string =
@@ -207,3 +210,6 @@ proc el*(qname: QName, children: List[NodeBuilder]): NodeBuilder =
   el(qname, Nil[Attr]().asMap, children)
 proc el*(qname: QName, child: NodeBuilder): NodeBuilder = el(qname, child ^^ endn())
 proc el*(qname: QName): NodeBuilder = el(qname, endn())
+
+proc textEl*(data: string): NodeBuilder =
+  () => newText(data).Node
