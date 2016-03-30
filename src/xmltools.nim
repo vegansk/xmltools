@@ -16,6 +16,8 @@ type
   NodeList* = List[Node]
   QNameImpl = tuple[ns: string, name: string]
   QName* = distinct QNameImpl
+  Attr* = MapItem[string, string]
+  Attrs* = Map[string, string]
   Namespaces* = Map[string, string]
 
 #################################################################################################### 
@@ -179,3 +181,29 @@ proc `//`*(lst: NodeList, qname: QName): NodeList =
 
 proc text*(lst: NodeList): string =
   lst.foldLeft("", (s: string, n: Node) => s & n.text)
+
+#####################################################################################################
+# XmlBuilder
+
+type NodeBuilder* = () -> Node
+
+proc run*(b: NodeBuilder): Node = b()
+
+proc endn*(): List[NodeBuilder] = Nil[NodeBuilder]()
+
+proc el*(qname: Qname, attrs: Attrs, children: List[NodeBuilder]): NodeBuilder = 
+  result = proc(): Node =
+    var res = ($qname).newElement
+    res.attrs = newStringTable()
+    attrs.forEach((v: Attr) => (res.attrs[v.key] = v.value))
+    children.forEach((nb: NodeBuilder) => res.add(nb().XmlNode))
+    result = res.Node
+proc el*(qname: Qname, attrs: Attrs): NodeBuilder = el(qname, attrs, endn())
+proc el*(qname: Qname, attrs: Attrs, child: NodeBuilder): NodeBuilder = el(qname, attrs, child ^^ endn())
+proc el*(qname: Qname, attr: Attr, children: List[NodeBuilder]): NodeBuilder = el(qname, [attr].asMap, children)
+proc el*(qname: Qname, attr: Attr, child: NodeBuilder): NodeBuilder = el(qname, attr, child ^^ endn())
+proc el*(qname: Qname, attr: Attr): NodeBuilder = el(qname, attr, endn())
+proc el*(qname: QName, children: List[NodeBuilder]): NodeBuilder =
+  el(qname, Nil[Attr]().asMap, children)
+proc el*(qname: QName, child: NodeBuilder): NodeBuilder = el(qname, child ^^ endn())
+proc el*(qname: QName): NodeBuilder = el(qname, endn())

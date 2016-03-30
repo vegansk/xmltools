@@ -96,3 +96,11 @@ suite "xmltools":
     .flatMap((e: Node) => e // "*:description" ++ e // "*:ValidationError")
     .map((n: Node) => n.text)
     .foldLeft("", (s, v: string) => s & (if s == "": "" else: "\L") & v)
+
+  test "XML builder":
+    check: $(el"test".run) == "<test />"
+    check: $(el("ns" $: "test").run) == "<ns:test />"
+    let xml = el("test", el("a", el("ns" $: "child")) ^^ el("b") ^^ el("c") ^^ endn())
+    echo xml()
+    let xmla = el("test", ("a", "b"), el("a"))
+    echo xmla()
