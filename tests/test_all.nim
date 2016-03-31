@@ -113,6 +113,22 @@ suite "xmltools":
     check: (xml // "c" /! "v").asIntO == 100500.some
     check: (xml // "c" /! "v").asInt == 100500
 
+  test "Parse to object":
+    let xml = Node.fromStringE """
+<data>
+  <id>100</id>
+  <str>Hello, world!</str>
+</data>
+"""
+    type Data = tuple[
+      id: int,
+      str: string,
+      optStr: Option[string]
+    ]
+    let o: EitherS[Data] = tryS do -> auto:
+      ((xml /! "id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO)
+    check: o == (100, "Hello, world!", string.none).rightS
+
   test "XML builder":
     check: $(el"test".run) == "<test />"
     check: $(el("ns" $: "test").run) == "<ns:test />"
@@ -120,5 +136,4 @@ suite "xmltools":
     echo xml()
     let xmla = el("test", ("a", "b"), el("a"))
     echo xmla()
-
     check: $(el("test", textEl("data")).run) == "<test>data</test>"

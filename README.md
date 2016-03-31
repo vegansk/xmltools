@@ -84,3 +84,21 @@ let msgs = (xml // "*:Fault")
   .map((n: Node) => n.text)
   .foldLeft("", (s, v: string) => s & (if s == "": "" else: "\L") & v)
 ```
+
+### Xml to object parsing ###
+
+```nim
+let xml = Node.fromStringE """
+<data>
+  <id>100</id>
+  <str>Hello, world!</str>
+</data>
+"""
+type Data = tuple[
+  id: int,
+  str: string,
+  optStr: Option[string]
+]
+let o: EitherS[Data] = tryS do -> auto:
+  ((xml /! "id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO)
+```
