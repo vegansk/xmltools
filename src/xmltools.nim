@@ -16,7 +16,7 @@ type
   NodeList* = List[Node]
   QNameImpl = tuple[ns: string, name: string]
   QName* = distinct QNameImpl
-  Attr* = MapItem[string, string]
+  Attr = (string, string)
   Attrs* = Map[string, string]
   Namespaces* = Map[string, string]
   NodeNotFoundError* = object of KeyError

@@ -1,5 +1,5 @@
 version       = "0.0.1"
-author        = "Anatoly Galiulin"
+author        = "Anatoly Galiulin <galiulin.anatoly@gmail.com>"
 description   = "High level xml library for Nim"
 license       = "MIT"
 
