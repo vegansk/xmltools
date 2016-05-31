@@ -1,4 +1,4 @@
-version       = "0.0.1"
+version       = "0.0.3"
 author        = "Anatoly Galiulin <galiulin.anatoly@gmail.com>"
 description   = "High level xml library for Nim"
 license       = "MIT"
