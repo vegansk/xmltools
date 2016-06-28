@@ -5,7 +5,7 @@ license       = "MIT"
 
 srcdir        = "src"
 
-requires "nim >= 0.13.1", "nimfp >= 0.0.4"
+requires "nim >= 0.13.1", "nimfp >= 0.0.7", "nimboost >= 0.0.1"
 
 proc buildBase(debug: bool, bin: string, src: string) =
   switch("out", (thisDir() & "/" & bin).toExe)

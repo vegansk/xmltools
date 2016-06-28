@@ -9,7 +9,8 @@ import xmltree,
        strtabs,
        sequtils,
        re,
-       future
+       future,
+       boost.parsers
 
 type
   Node* = distinct XmlNode
@@ -238,10 +239,28 @@ proc asStr*(n: Node): string =
   n.asStrO.getOrElse("")
 
 proc asIntO*(n: NodeList|Node): Option[int] =
-  n.asStrO.map((v: string) => v.parseInt)
+  n.asStrO.map((v: string) => v.strToInt)
 
 proc asInt*(n: Node): int =
-  n.asStr.parseInt
+  n.asStr.strToInt
+
+proc asInt64O*(n: NodeList|Node): Option[int64] =
+  n.asStrO.map((v: string) => v.strToInt64)
+
+proc asInt64*(n: Node): int64 =
+  n.asStr.strToInt64
+
+proc asUIntO*(n: NodeList|Node): Option[uint] =
+  n.asStrO.map((v: string) => v.strToUInt)
+
+proc asUInt*(n: Node): uint =
+  n.asStr.strToUInt
+
+proc asUInt64O*(n: NodeList|Node): Option[uint64] =
+  n.asStrO.map((v: string) => v.strToUInt64)
+
+proc asUInt64*(n: Node): uint64 =
+  n.asStr.strToUInt64
 
 #####################################################################################################
 # XmlBuilder
