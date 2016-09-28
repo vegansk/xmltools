@@ -126,7 +126,7 @@ suite "xmltools":
       optStr: Option[string]
     ]
     let o: EitherS[Data] = tryS do -> auto:
-      ((xml /! "id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO)
+      Data(((xml /! "id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO))
     check: o == (100, "Hello, world!", string.none).rightS
 
   test "XML builder":
