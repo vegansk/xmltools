@@ -271,22 +271,19 @@ proc run*(b: NodeBuilder): Node = b()
 
 proc endn*(): List[NodeBuilder] = Nil[NodeBuilder]()
 
-proc el*(qname: Qname, attrs: Attrs, children: List[NodeBuilder]): NodeBuilder = 
+proc attrs*(attrs: varargs[Attr]): Attrs =
+  asMap(attrs)
+
+proc el*(qname: Qname, attrs: Attrs, children: List[NodeBuilder]): NodeBuilder =
   result = proc(): Node =
     var res = ($qname).newElement
     res.attrs = newStringTable()
     attrs.forEach((v: Attr) => (res.attrs[v.key] = v.value))
     children.forEach((nb: NodeBuilder) => res.add(nb().XmlNode))
     result = res.Node
-proc el*(qname: Qname, attrs: Attrs): NodeBuilder = el(qname, attrs, endn())
-proc el*(qname: Qname, attrs: Attrs, child: NodeBuilder): NodeBuilder = el(qname, attrs, child ^^ endn())
-proc el*(qname: Qname, attr: Attr, children: List[NodeBuilder]): NodeBuilder = el(qname, [attr].asMap, children)
-proc el*(qname: Qname, attr: Attr, child: NodeBuilder): NodeBuilder = el(qname, attr, child ^^ endn())
-proc el*(qname: Qname, attr: Attr): NodeBuilder = el(qname, attr, endn())
-proc el*(qname: QName, children: List[NodeBuilder]): NodeBuilder =
-  el(qname, Nil[Attr]().asMap, children)
-proc el*(qname: QName, child: NodeBuilder): NodeBuilder = el(qname, child ^^ endn())
-proc el*(qname: QName): NodeBuilder = el(qname, endn())
+proc el*(qname: Qname, attrs: Attrs, children: varargs[NodeBuilder]): NodeBuilder = el(qname, attrs, asList(children))
+proc el*(qname: Qname, children: List[NodeBuilder]): NodeBuilder = el(qname, attrs(), children)
+proc el*(qname: Qname, children: varargs[NodeBuilder]): NodeBuilder = el(qname, attrs(), asList(children))
 
 proc textEl*(data: string): NodeBuilder =
   () => newText(data).Node

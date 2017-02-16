@@ -132,8 +132,8 @@ suite "xmltools":
   test "XML builder":
     check: $(el"test".run) == "<test />"
     check: $(el("ns" $: "test").run) == "<ns:test />"
-    let xml = el("test", asList(el("a", el("ns" $: "child")), el("b"), el("c")))
+    let xml = el("test", el("a", el("ns" $: "child")), el("b"), el("c"))
     echo xml()
-    let xmla = el("test", ("a", "b"), el("a"))
+    let xmla = el("test", attrs(("a", "b")), el("a"))
     echo xmla()
     check: $(el("test", textEl("data")).run) == "<test>data</test>"
