@@ -235,7 +235,7 @@ proc asStrO*(n: NodeList|Node): Option[string] =
   else:
     n.text.some.notEmpty
 
-proc asStr*(n: Node): string =
+proc asStr*(n: NodeList|Node): string =
   n.asStrO.getOrElse("")
 
 proc asIntO*(n: NodeList|Node): Option[int] =
