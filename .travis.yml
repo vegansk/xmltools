@@ -7,11 +7,11 @@ before_install:
   - cd csources && sh build.sh
   - cd ..
   - bin/nim c koch
-  - ./koch boot -d:release
+  - ./koch boot
+  - ./koch tools
   - export PATH=$PWD/bin:$PATH
-  - nim install_nimble.nims
   - cd ..
-  - nimble install -y
+  - nimble install -y -d
 script:
   - nim test
   
