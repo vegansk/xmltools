@@ -2,10 +2,10 @@ import unittest,
        fp.either,
        fp.option,
        fp.map,
-       fp.list,
        xmltools,
        re,
        future
+import fp.list except `$`
 
 suite "xmltools":
   test "Conversion":

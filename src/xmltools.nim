@@ -81,7 +81,7 @@ proc nodeNotFoundMsg(n: string, name: string, deepSearch: bool): string =
   "Node $# doesn't have $# as it's $#" % [$n.name, name, if deepSearch: "descendant" else: "child"]
 
 proc toMap(s: StringTableRef): Map[string,string] =
-  result = asMap[string,string]()
+  result = newMap[string,string]()
   for k,v in s:
     result = result + (k,v)
 
