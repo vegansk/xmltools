@@ -18,6 +18,7 @@ type
   QNameImpl = tuple[ns: string, name: string]
   QName* = distinct QNameImpl
   Attr = (string, string)
+  AttrValue* = Option[string]
   Attrs* = Map[string, string]
   Namespaces* = Map[string, string]
   NodeNotFoundError* = object of KeyError
@@ -100,12 +101,12 @@ proc text*(n: Node): string = n.XmlNode.innerText
 
 proc child*(n: Node, qname: QName): Option[Node] = n.XmlNode.child($qname).some.notNil.map((v: XmlNode) => v.Node)
 
-proc attr*(n: Node, qname: QName): Option[string] =
+proc attr*(n: Node, qname: QName): AttrValue =
   if n.XmlNode.kind == xnElement and n.XmlNode.attrsLen > 0:
     let name = $qname
-    if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some else: string.none
+    if n.XmlNode.attrs.hasKey(name): n.XmlNode.attrs[name].some.AttrValue else: string.none.AttrValue
   else:
-    string.none
+    string.none.AttrValue
 
 proc `/`*(n: Node, regex: XRegex): NodeList =
   result = Nil[Node]()
@@ -156,6 +157,8 @@ proc `/@`*(n: Node, regex: XRegex): NodeList =
       if ch.Node.findAttrName(regex).isDefined:
         result = Cons(ch.Node, result)
     result = result.reverse
+
+proc asStrO*(n: NodeList|Node|AttrValue): Option[string]
 
 proc `/@`*(n: Node, name: QName): NodeList =
   result = Nil[Node]()
@@ -229,37 +232,39 @@ proc `//!`*(n: NodeList|Node, v: QName|XRegex): Node =
       raise newException(NodeNotFoundError, nodeNotFoundMsg("<NodeList>", $v, true))
   res.head
 
-proc asStrO*(n: NodeList|Node): Option[string] =
+proc asStrO(n: NodeList|Node|AttrValue): Option[string] =
   when n is NodeList:
     n.headOption.map((n: Node) => n.text).notEmpty
+  elif n is AttrValue:
+    n
   else:
     n.text.some.notEmpty
 
-proc asStr*(n: NodeList|Node): string =
+proc asStr*(n: NodeList|Node|AttrValue): string =
   n.asStrO.getOrElse("")
 
-proc asIntO*(n: NodeList|Node): Option[int] =
+proc asIntO*(n: NodeList|Node|AttrValue): Option[int] =
   n.asStrO.map((v: string) => v.strToInt)
 
-proc asInt*(n: Node): int =
+proc asInt*(n: Node|AttrValue): int =
   n.asStr.strToInt
 
-proc asInt64O*(n: NodeList|Node): Option[int64] =
+proc asInt64O*(n: NodeList|Node|AttrValue): Option[int64] =
   n.asStrO.map((v: string) => v.strToInt64)
 
-proc asInt64*(n: Node): int64 =
+proc asInt64*(n: Node|AttrValue): int64 =
   n.asStr.strToInt64
 
-proc asUIntO*(n: NodeList|Node): Option[uint] =
+proc asUIntO*(n: NodeList|Node|AttrValue): Option[uint] =
   n.asStrO.map((v: string) => v.strToUInt)
 
-proc asUInt*(n: Node): uint =
+proc asUInt*(n: Node|AttrValue): uint =
   n.asStr.strToUInt
 
-proc asUInt64O*(n: NodeList|Node): Option[uint64] =
+proc asUInt64O*(n: NodeList|Node|AttrValue): Option[uint64] =
   n.asStrO.map((v: string) => v.strToUInt64)
 
-proc asUInt64*(n: Node): uint64 =
+proc asUInt64*(n: Node|AttrValue): uint64 =
   n.asStr.strToUInt64
 
 #####################################################################################################

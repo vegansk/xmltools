@@ -115,8 +115,7 @@ suite "xmltools":
 
   test "Parse to object":
     let xml = Node.fromStringE """
-<data>
-  <id>100</id>
+<data id="100">
   <str>Hello, world!</str>
 </data>
 """
@@ -126,7 +125,7 @@ suite "xmltools":
       optStr: Option[string]
     ]
     let o: EitherS[Data] = tryS do -> auto:
-      Data(((xml /! "id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO))
+      Data((xml.attr("id").asInt, (xml /! "str").asStr, (xml / "opt_str").asStrO))
     check: o == (100, "Hello, world!", string.none).rightS
 
   test "XML builder":
