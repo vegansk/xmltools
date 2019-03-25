@@ -2,15 +2,15 @@ import xmltree,
        xmlparser,
        streams,
        strutils,
-       fp.either,
-       fp.list,
-       fp.option,
-       fp.map,
+       fp/either,
+       fp/list,
+       fp/option,
+       fp/map,
        strtabs,
        sequtils,
        re,
-       future,
-       boost.parsers
+       sugar,
+       boost/parsers
 
 type
   Node* = distinct XmlNode
@@ -55,7 +55,7 @@ proc `$`*(qname: QName): string =
   else:
     qname.ns & ":" & qname.name
 
-proc fromString(q = QName, s: string): QName =
+proc fromString(q: typedesc[QName], s: string): QName =
   let lst = s.split(":")
   if lst.len >= 2:
     lst[0] $: lst[1]
@@ -94,7 +94,7 @@ proc `$`*(n: Node): string = n.XmlNode.`$`
 proc fromStringE*(n = Node, s: string): Node =
   s.newStringStream.parseXml.Node
 
-proc fromString*(n = Node, s: string): EitherS[Node] =
+proc fromString*(n: typedesc[Node], s: string): EitherS[Node] =
   tryS(() => Node.fromStringE(s))
 
 proc text*(n: Node): string = n.XmlNode.innerText
