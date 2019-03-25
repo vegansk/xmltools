@@ -1,11 +1,11 @@
 import unittest,
-       fp.either,
-       fp.option,
-       fp.map,
+       fp/either,
+       fp/option,
+       fp/map,
        xmltools,
        re,
        future
-import fp.list except `$`
+import fp/list except `$`
 
 suite "xmltools":
   test "Conversion":

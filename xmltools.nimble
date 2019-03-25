@@ -9,4 +9,4 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 0.17.2", "nimfp >= 0.4.2", "nimboost >= 0.5.3"
+requires "nim >= 0.19.0", "nimfp >= 0.4.4", "nimboost >= 0.5.5"
